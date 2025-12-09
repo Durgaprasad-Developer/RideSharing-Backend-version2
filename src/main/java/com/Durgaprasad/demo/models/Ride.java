@@ -14,6 +14,8 @@ public class Ride {
     private String driverId;
     private String pickupLocation;
     private String dropLocation;
+    private Double fare;
+    private Double distanceKm;
     private String status;
     private Instant createdAt;
 
@@ -57,6 +59,22 @@ public class Ride {
 
     public void setDropLocation(String dropLocation) {
         this.dropLocation = dropLocation;
+    }
+
+    public Double getFare() {
+        return fare;
+    }
+
+    public void setFare(Double fare) {
+        this.fare = fare;
+    }
+
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     public String getStatus() {
