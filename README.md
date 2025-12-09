@@ -60,6 +60,7 @@ src/main/java/com.example.rideshare
 │
 └── utils/
     └── JwtUtil.java
+    ```
 🚀 Setup Instructions
 1️⃣ Clone the repository
 bash
