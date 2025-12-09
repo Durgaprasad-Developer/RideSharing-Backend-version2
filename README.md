@@ -1,99 +1,300 @@
-# 🚕 RideShare Backend — Simple Documentation
+🚖 RideShare Backend — README.md
 
-A small backend project where users can request rides and drivers can accept them. Built using **Spring Boot**, **MongoDB**, and **JWT authentication**.
+A clean, modular Spring Boot + MongoDB + JWT backend for a mini Uber-like ride-sharing system.
 
----
+📌 Overview
 
-## 📌 What This Project Does
+This backend supports:
 
-* Users can register and log in
-* Passengers can request a ride
-* Drivers can view pending ride requests
-* Drivers can accept rides
-* Both can complete a ride
-* All secure using JWT tokens
+🔐 User Authentication (JWT)
 
----
+👤 Passengers create ride requests
 
-## 🛠 Tech Used
+👨‍✈️ Drivers accept + complete rides
 
-* Spring Boot
-* MongoDB (Atlas)
-* Spring Security + JWT
-* Java 17+
+🔍 Searching, filtering, sorting rides
 
----
+📊 Analytics using MongoDB Aggregation Pipelines
 
-## 📁 Main Folders
+🛠 Tech Stack
+Layer	Technology
+Backend	Spring Boot 3
+Auth	JWT (HS256)
+Database	MongoDB Atlas
+Security	Spring Security
+Build Tool	Maven
+Java	21
+📁 Folder Structure
+src/main/java/com.example.rideshare
+│
+├── config/
+│   ├── SecurityConfig.java
+│   └── JwtFilter.java
+│
+├── controllers/
+│   ├── AuthController.java
+│   ├── RideController.java
+│   ├── RideQueryController.java
+│   └── AnalyticsController.java
+│
+├── models/
+│   ├── User.java
+│   └── Ride.java
+│
+├── repository/
+│   ├── UserRepository.java
+│   └── RideRepository.java
+│
+├── services/
+│   ├── AuthService.java
+│   ├── RideService.java
+│   ├── RideQueryService.java
+│   └── AnalyticsService.java
+│
+└── utils/
+    └── JwtUtil.java
 
-```
-config/        → security + JWT
-controller/    → all API endpoints
-service/       → business logic
-repository/    → MongoDB operations
-model/         → database entities
-dto/           → request data
-exception/     → error handling
-```
+🚀 Setup Instructions
+1️⃣ Clone the repository
+git clone <repo-url>
+cd RideShareBackend
 
----
+2️⃣ Configure application.properties
+server.port=8081
 
-## 👥 User Roles
+spring.data.mongodb.uri=mongodb+srv://<username>:<password>@cluster.mongodb.net/rideshare_db
 
-* `ROLE_USER` → Passenger
-* `ROLE_DRIVER` → Driver
+app.jwt.secret=mysuperlongsecretkeymysuperlongsecretkeymysuperlongsecretkey
+app.jwt.expiration-ms=3600000
 
----
+3️⃣ Run the backend
+./mvnw spring-boot:run
 
-## 📄 Important API Endpoints
 
-### Public
+Backend runs on:
 
-* **POST** `/api/auth/register` — create account
-* **POST** `/api/auth/login` — login + get JWT
+http://localhost:8081
 
-### Passenger
+🔐 Authentication (JWT)
 
-* **POST** `/api/v1/rides` — request a ride
-* **GET** `/api/v1/user/rides` — view own rides
+All protected endpoints require:
 
-### Driver
-
-* **GET** `/api/v1/driver/rides/requests` — view pending rides
-* **POST** `/api/v1/driver/rides/{id}/accept` — accept ride
-
-### Shared
-
-* **POST** `/api/v1/rides/{id}/complete` — complete ride
-
----
-
-## 🔐 Authentication
-
-Send this in every protected request:
-
-```
 Authorization: Bearer <token>
-```
 
----
+🧑 AUTH ENDPOINTS
+1. Register
+POST /api/auth/register
+Request
+{
+  "username": "ram",
+  "password": "1234",
+  "role": "USER"
+}
 
-## 🗄 Database Models
+Response
+{
+  "username": "ram",
+  "role": "USER"
+}
 
-### User
+2. Login
+POST /api/auth/login
+Request
+{
+  "username": "ram123",
+  "password": "1234"
+}
 
-```
-id, username, password, role
-```
+Response
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "username": "ram123",
+  "role": "USER"
+}
 
-### Ride
+🚗 RIDE ENDPOINTS (Core Workflow)
+3. Create Ride
+POST /api/v1/rides
+Request
+{
+  "pickupLocation": "Hyderabad",
+  "dropLocation": "Bangalore",
+  "fare": 1500,
+  "distanceKm": 600
+}
 
-```
-id, userId, driverId, pickup, drop, status, createdAt
-```
+Response (REAL example)
+{
+  "id": "6937f7781ba9b7280ca749d4",
+  "userId": "ram123",
+  "driverId": null,
+  "pickupLocation": "Hyderabad",
+  "dropLocation": "Bangalore",
+  "fare": 1500.0,
+  "distanceKm": 600.0,
+  "status": "REQUESTED",
+  "createdAt": "2025-12-09T10:18:32.156613618Z"
+}
 
----
+4. Accept Ride (Driver)
+POST /api/v1/driver/rides/{rideId}/accept
+Response
+{
+  "id": "6937f7781ba9b7280ca749d4",
+  "driverId": "driver001",
+  "status": "ACCEPTED"
+}
 
-## ✔ Status Flow
+5. Complete Ride
+POST /api/v1/rides/{rideId}/complete
+Response
+{
+  "id": "6937f7781ba9b7280ca749d4",
+  "status": "COMPLETED"
+}
 
-`REQUESTED → ACCEPTED → COMPLETED`
+👤 USER QUERIES
+6. Get All Rides for User
+GET /api/v1/rides/user/{userId}
+Response
+[
+  {
+    "id": "6937f7781ba9b7280ca749d4",
+    "status": "REQUESTED",
+    "pickupLocation": "Hyderabad"
+  }
+]
+
+7. Get User Rides by Status
+GET /api/v1/rides/user/{userId}/status/{status}
+Response
+[
+  {
+    "id": "6937f7781ba9b7280ca749d4",
+    "status": "REQUESTED"
+  }
+]
+
+👨‍✈️ DRIVER QUERIES
+8. Pending Ride Requests
+GET /api/v1/driver/rides/requests
+Response
+[
+  {
+    "id": "6937f7781ba9b7280ca749d4",
+    "status": "REQUESTED"
+  }
+]
+
+9. Driver Active Rides
+GET /api/v1/driver/{driverId}/active-rides
+Response
+[
+  {
+    "id": "6937f9123be21a1a0c987abc",
+    "status": "ACCEPTED"
+  }
+]
+
+🔍 SEARCH / FILTER / SORT ENDPOINTS
+10. Search Ride
+GET /api/v1/rides/search?text=hyd
+Response
+[
+  {
+    "pickupLocation": "Hyderabad",
+    "dropLocation": "Bangalore"
+  }
+]
+
+11. Filter by Distance
+GET /api/v1/rides/filter-distance?min=10&max=50
+Response
+[
+  {
+    "distanceKm": 35,
+    "pickupLocation": "Madhapur"
+  }
+]
+
+12. Filter by Date Range
+GET /api/v1/rides/filter-date-range?start=...&end=...
+Response
+[
+  {
+    "createdAt": "2025-01-05T09:00:00Z"
+  }
+]
+
+13. Sort by Fare
+GET /api/v1/rides/sort?order=desc
+Response
+[
+  { "fare": 2000 },
+  { "fare": 1500 },
+  { "fare": 500 }
+]
+
+14. Filter by Status + Search
+GET /api/v1/rides/filter-status?status=REQUESTED&search=hyd
+Response
+[
+  {
+    "status": "REQUESTED",
+    "pickupLocation": "Hyderabad"
+  }
+]
+
+15. Advanced Search
+GET /api/v1/rides/advanced-search?search=hyd&status=COMPLETED&sort=fare&order=asc&page=0&size=10
+Response
+[
+  {
+    "pickupLocation": "Hyderabad",
+    "status": "COMPLETED",
+    "fare": 1200
+  }
+]
+
+16. Rides by Date
+GET /api/v1/rides/date/2025-12-09
+Response
+[
+  { "id": "6937f7781ba9b7280ca749d4" }
+]
+
+📊 ANALYTICS ENDPOINTS
+17. Rides Per Day
+GET /api/v1/analytics/rides-per-day
+Response
+[
+  { "_id": "2025-12-09", "count": 5 }
+]
+
+18. Driver Summary
+GET /api/v1/analytics/driver/{driverId}/summary
+Response
+{
+  "totalRides": 15,
+  "completedRides": 12,
+  "avgDistance": 8.3,
+  "totalFare": 5600
+}
+
+19. User Spending
+GET /api/v1/analytics/user/{userId}/spending
+Response
+{
+  "completedRides": 8,
+  "totalSpent": 4100
+}
+
+20. Status Summary
+GET /api/v1/analytics/status-summary
+Response
+[
+  { "_id": "REQUESTED", "count": 4 },
+  { "_id": "ACCEPTED", "count": 3 },
+  { "_id": "COMPLETED", "count": 10 }
+]
+
