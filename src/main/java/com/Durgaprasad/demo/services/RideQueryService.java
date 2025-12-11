@@ -26,7 +26,7 @@ public class RideQueryService {
         this.mongoTemplate = mongoTemplate;
     }
 
-    public List<Ride> searchByPickupOrDrop(String text) {
+    public List<Ride> searchRides(String text) {
         Criteria c1 = Criteria.where("pickupLocation").regex(text, "i");
         Criteria c2 = Criteria.where("dropLocation").regex(text, "i");
         Query q = new Query(new Criteria().orOperator(c1, c2));
@@ -42,6 +42,12 @@ public class RideQueryService {
         Query q = new Query(Criteria.where("createdAt").gte(start).lte(end));
         return mongoTemplate.find(q, Ride.class);
     }
+
+    public List<Ride> filterByDateRange(LocalDate start, LocalDate end) {
+    Instant s = start.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant e = end.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+    return filterByDateRange(s, e);  // reuses your existing logic
+}
 
     public List<Ride> sortByFare(String order) {
         Sort.Direction dir = "desc".equalsIgnoreCase(order) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -64,7 +70,7 @@ public class RideQueryService {
         return mongoTemplate.find(q, Ride.class);
     }
 
-    public List<Ride> filterStatusWithKeyword(String status, String text) {
+    public List<Ride> filterByStatusAndSearch(String status, String text) {
         Criteria statusCrit = Criteria.where("status").is(status);
         Criteria pickup = Criteria.where("pickupLocation").regex(text, "i");
         Criteria drop = Criteria.where("dropLocation").regex(text, "i");

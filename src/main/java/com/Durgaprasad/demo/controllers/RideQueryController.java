@@ -22,7 +22,7 @@ public class RideQueryController {
 
     @GetMapping("/search")
     public List<Ride> search(@RequestParam String text) {
-        return rideQueryService.searchByPickupOrDrop(text);
+        return rideQueryService.searchRides(text);
     }
 
     @GetMapping("/filter-distance")
@@ -59,7 +59,8 @@ public class RideQueryController {
 
     @GetMapping("/filter-status")
     public List<Ride> filterStatusAndSearch(@RequestParam String status, @RequestParam String search) {
-        return rideQueryService.filterStatusWithKeyword(status, search);
+        return rideQueryService.filterByStatusAndSearch(status, search);
+
     }
 
     @GetMapping("/advanced-search")
